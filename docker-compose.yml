@@ -1,0 +1,68 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: travel-booking-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    networks:
+      - travel-booking
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  nginx:
+    image: nginx:latest
+    container_name: travel-booking-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - travel-booking
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8.0
+    container_name: travel-booking-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: travel_booking
+      MYSQL_USER: travel_user
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - travel-booking
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: travel-booking-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - travel-booking
+
+networks:
+  travel-booking:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
