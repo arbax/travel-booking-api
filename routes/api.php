@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\PassengerController;
 use App\Http\Controllers\Api\TicketController;
-
+use App\Http\Controllers\Api\PaymentController;
 
 
 
@@ -30,5 +30,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('bookings/{booking}/passengers/{passenger}/ticket', [TicketController::class, 'show']);
     Route::post('bookings/{booking}/passengers/{passenger}/ticket/issue', [TicketController::class, 'issue']);
 
-
+    Route::post('bookings/{booking}/payment', [PaymentController::class, 'store']);
+    Route::get('bookings/{booking}/payment', [PaymentController::class, 'show']);
 });
